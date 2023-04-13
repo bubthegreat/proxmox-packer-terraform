@@ -1,0 +1,4 @@
+terraform/roots/proxmox_server/.terraform*
+**.tfstate
+**.tfvars
+packer_cache/
