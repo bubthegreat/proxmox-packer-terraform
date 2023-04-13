@@ -1,7 +1,3 @@
-# Ubuntu Server jammy Docker
-# ---
-# Packer Template to create an Ubuntu Server (jammy) with Docker on Proxmox
-
 # Variable Definitions
 variable "proxmox_api_url" {
     type = string
@@ -17,7 +13,7 @@ variable "proxmox_api_password" {
 }
 
 # Resource Definiation for the VM Template
-source "proxmox" "ubuntu-server-jammy" {
+source "proxmox-iso" "ubuntu-server-jammy-base" {
 
     # Proxmox Connection Settings
     proxmox_url = "${var.proxmox_api_url}"
@@ -29,24 +25,23 @@ source "proxmox" "ubuntu-server-jammy" {
     # VM General Settings
     node = "pve"
     vm_id = "101"
-    vm_name = "ubuntu-server-jammy"
+    vm_name = "ubuntu-server-jammy-base"
     template_description = "Ubuntu Server jammy Image"
-
-    # VM OS Settings
-    # (Option 1) Local ISO File
-    iso_file = "local:iso/ubuntu-22.04-live-server-amd64.iso"
-    # - or -
-    # (Option 2) Download ISO
-    # iso_url = "https://releases.ubuntu.com/20.04/ubuntu-20.04.6-live-server-amd64.iso"
-    # iso_checksum = "b8f31413336b9393ad5d8ef0282717b2ab19f007df2e9ed5196c13d8f9153c8b"
-    iso_storage_pool = "local"
-    unmount_iso = true
-
-    # VM System Settings
     qemu_agent = true
-
-    # VM Hard Disk Settings
     scsi_controller = "virtio-scsi-pci"
+    cores = "4"
+    sockets = "2"
+    memory = "8192" 
+    network_adapters {
+        model = "virtio"
+        bridge = "vmbr0"
+        firewall = "false"
+    } 
+    ssh_username = "bub"
+    ssh_timeout = "20m"
+    ssh_private_key_file = "~/.ssh/id_rsa"
+
+    # ISO Settings
 
     disks {
         disk_size = "32G"
@@ -56,25 +51,13 @@ source "proxmox" "ubuntu-server-jammy" {
         type = "virtio"
     }
 
-    # VM CPU Settings
-    cores = "4"
-    # sockets = "2"
-    
-    # VM Memory Settings
-    memory = "8192" 
+    iso_file = "local:iso/ubuntu-22.04-live-server-amd64.iso"
+    iso_storage_pool = "local"
+    unmount_iso = true
 
-    # VM Network Settings
-    network_adapters {
-        model = "virtio"
-        bridge = "vmbr0"
-        firewall = "false"
-    } 
-
-    # VM Cloud-Init Settings
     cloud_init = true
     cloud_init_storage_pool = "local-lvm"
 
-    # PACKER Boot Commands
     boot_command = [
         "<esc><wait>",
         "e<wait>",
@@ -86,30 +69,19 @@ source "proxmox" "ubuntu-server-jammy" {
     boot = "c"
     boot_wait = "5s"
 
-    # PACKER Autoinstall Settings
     http_directory = "http" 
-    # (Optional) Bind IP Address and Port
     http_bind_address = "0.0.0.0"
     http_port_min = 8802
     http_port_max = 8802
 
-    ssh_username = "bub"
 
-    # (Option 1) Add your Password here
-    # ssh_password = "your-password"
-    # - or -
-    # (Option 2) Add your Private SSH KEY file here
-    ssh_private_key_file = "~/.ssh/id_rsa"
-
-    # Raise the timeout, when installation takes longer
-    ssh_timeout = "20m"
 }
 
 # Build Definition to create the VM Template
 build {
 
-    name = "ubuntu-server-jammy"
-    sources = ["source.proxmox.ubuntu-server-jammy"]
+    name = "ubuntu-server-jammy-base"
+    sources = ["source.proxmox-iso.ubuntu-server-jammy-base"]
 
     # Provisioning the VM Template for Cloud-Init Integration in Proxmox #1
     provisioner "shell" {
@@ -135,16 +107,5 @@ build {
     # Provisioning the VM Template for Cloud-Init Integration in Proxmox #3
     provisioner "shell" {
         inline = [ "sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg" ]
-    }
-
-    # Provisioning the VM Template with Docker Installation #4
-    provisioner "shell" {
-        inline = [
-            "sudo apt-get install -y ca-certificates curl gnupg lsb-release",
-            "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-            "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
-            "sudo apt-get -y update",
-            "sudo apt-get install -y docker-ce docker-ce-cli containerd.io"
-        ]
     }
 }

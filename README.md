@@ -1,8 +1,16 @@
-# To get this running:
+# Install:
 
-rename the `credentials.auto.tfvars.example` to `credentials.auto.tfvars` and update the values in the file to reflect your proxmox server.
+### Prerequisites
 
-Run the terraform:
+We require terraform and packer for these operations, as well as a functioning proxmox server with either user/pass or a token set up.
+
+### Terraform Configuration
+
+1. Rename the `credentials.auto.tfvars.example` to `credentials.auto.tfvars` and update the values in the file to reflect your proxmox server.
+2. Initialize terraform
+3. Run the terraform apply
+
+### Example init and apply
 
 ```
 cd terraform/roots/proxmox_server
@@ -75,10 +83,9 @@ Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
 PS C:\Users\bubth\Development\homelab\terraform\roots\proxmox_server>
 ```
 
-
 # Notes
 
-This is workign on a windows box, but does not work on WSL2 because of the network forwarding shenanigans that packer requires for the cloud-init.
+This is working on a windows box, but does not work on WSL2 because of the network forwarding shenanigans that packer requires for the cloud-init.
 
 # TODO:
 
@@ -88,6 +95,23 @@ This is workign on a windows box, but does not work on WSL2 because of the netwo
 4. Convert sshkeys to variables
 5. target node should be an input variable
 6. Force reboot to get around https://github.com/Telmate/terraform-provider-proxmox/issues/603
+
+
+# Debugging
+
+If you're running into issues with the packer build, you can build the image manually with some debug options instead of through the terraform resources, for example, if you need to debug a command live and want to use the ask flag, the packer terraform resource doesn't currently support that, so you will have to do it manually:
+
+```powershell
+PS C:\Users\bubth\Development\homelab\packer\ubuntu-server-jammy-docker> packer build -var="proxmox_api_user=root@pam" -var="proxmox_api_password=<super_secret>" -var="proxmox_api_url=https://192.168.29.153:8006/api2/json" -on-error=ask .\ubuntu-server-jammy-docker.pkr.hcl
+```
+
+# Bugs
+
+### This is why we're using telmate/proxmox/2.9.11 instead of 2.9.14
+
+https://gitlab.com/acidpizza-stuff/infra/terraform-modules/proxmox-vm-terraform-module
+
+https://github.com/Telmate/terraform-provider-proxmox/issues/704
 
 
 # References
@@ -102,9 +126,4 @@ https://registry.terraform.io/providers/toowoxx/packer/0.14.0
 
 https://registry.terraform.io/providers/Telmate/proxmox/latest
 
-
-### This is why we're using telmate/proxmox/2.9.11 instead of 2.9.14
-
-https://gitlab.com/acidpizza-stuff/infra/terraform-modules/proxmox-vm-terraform-module
-
-https://github.com/Telmate/terraform-provider-proxmox/issues/704
+https://developer.hashicorp.com/packer/plugins/builders/proxmox

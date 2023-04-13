@@ -1,7 +1,8 @@
 # https://registry.terraform.io/providers/Telmate/proxmox/latest/docs/resources/vm_qemu#argument-reference
 
 resource "proxmox_vm_qemu" "k8s_server_1" {
-  depends_on    = [packer_image.ubuntu_server_jammy]
+  depends_on    = [packer_image.ubuntu_server_jammy_docker]
+  vmid          = 2101
   name          = "k8s-server-1"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -9,7 +10,7 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy.name
+  clone         = packer_image.ubuntu_server_jammy_docker.name
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -20,8 +21,9 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
 
   disk {
     storage = "local-lvm"
-    type = "scsi"
+    type = "virtio"
     size = "32G"
+    format = "raw"
   }
 
   network {
@@ -32,13 +34,31 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   os_type = "cloud-init"
   ipconfig0 = "ip=192.168.29.101/16,gw=192.168.29.1"
   nameserver = "192.168.29.1"
-  ciuser = "bub"
+  ciuser = "${var.vm_username}"
   sshkeys = <<EOF
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC6CLheLTcYf7v23mF69qpGiTfCd7dmhMFTRh3IfqCppURO+W10rbCIebMEiT4bjF1QXAMwaXFRJ/FahIyWsMiojJ5yyCkJzspZuJyDUaLFQRQY0U0vS4Y7B5FqO5PpNXfPXN1uOXpgJWAlzcm2pb+XDl6ceF3F2EHTWXjUvLMrAVri8drws3B2IXMwommD6CcXcqK+mbAqQTEaPODV6q+G3clTdStKqF+kTE+az49hh+wctGU0fQCh4G2gv+cddizGKTUou/wIlD0uHk3OgLMT5/J7cQvWzyzKVa34LEboDg8pBgP+FXJxGTHLxpy+8K68oxhGssc9FLiOnWESxRcaCJgU4WMpJR6pof1VyJJTEODAd2eg5LWfIsTwVFfl8goDnuR1zY3H3IfMDkyv7a0kFYvUjk6XPBpv/hnVO22mfCyAZRVn3PzTqmw3c7W5Lk4TSRZHzVrZUNN2kMmfYZE4uP0IUmxDpvu47HmMatQlRDGekv439JPW/PJ0dD8SQpE= bub@DESKTOP-VEH8D7J
-EOF
+  ${var.vm_public_key}
+  EOF
 }
+
+resource "null_resource" "k8s_server_1_reboot" {
+  depends_on    = [proxmox_vm_qemu.k8s_server_1]
+  provisioner "remote-exec" {
+    inline = [
+      "qm reboot ${proxmox_vm_qemu.k8s_server_1.vmid}",
+    ]
+    connection {
+      type     = "ssh"
+      user     = "${var.proxmox_server_user}"
+      password = "${var.proxmox_api_password}"
+      host     = "${var.proxmox_server_ip}"
+      timeout  = "60s"
+    }
+  }
+}
+
 resource "proxmox_vm_qemu" "k8s_server_2" {
-  depends_on    = [packer_image.ubuntu_server_jammy]
+  vmid          = 2102
+  depends_on    = [packer_image.ubuntu_server_jammy_docker]
   name          = "k8s-server-2"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -46,7 +66,7 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy.name
+  clone         = packer_image.ubuntu_server_jammy_docker.name
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -57,8 +77,9 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
 
   disk {
     storage = "local-lvm"
-    type = "scsi"
+    type = "virtio"
     size = "32G"
+    format = "raw"
   }
 
   network {
@@ -69,14 +90,31 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   os_type = "cloud-init"
   ipconfig0 = "ip=192.168.29.102/16,gw=192.168.29.1"
   nameserver = "192.168.29.1"
-  ciuser = "bub"
+  ciuser = "${var.vm_username}"
   sshkeys = <<EOF
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC6CLheLTcYf7v23mF69qpGiTfCd7dmhMFTRh3IfqCppURO+W10rbCIebMEiT4bjF1QXAMwaXFRJ/FahIyWsMiojJ5yyCkJzspZuJyDUaLFQRQY0U0vS4Y7B5FqO5PpNXfPXN1uOXpgJWAlzcm2pb+XDl6ceF3F2EHTWXjUvLMrAVri8drws3B2IXMwommD6CcXcqK+mbAqQTEaPODV6q+G3clTdStKqF+kTE+az49hh+wctGU0fQCh4G2gv+cddizGKTUou/wIlD0uHk3OgLMT5/J7cQvWzyzKVa34LEboDg8pBgP+FXJxGTHLxpy+8K68oxhGssc9FLiOnWESxRcaCJgU4WMpJR6pof1VyJJTEODAd2eg5LWfIsTwVFfl8goDnuR1zY3H3IfMDkyv7a0kFYvUjk6XPBpv/hnVO22mfCyAZRVn3PzTqmw3c7W5Lk4TSRZHzVrZUNN2kMmfYZE4uP0IUmxDpvu47HmMatQlRDGekv439JPW/PJ0dD8SQpE= bub@DESKTOP-VEH8D7J
-EOF
+  ${var.vm_public_key}
+  EOF
+}
+
+resource "null_resource" "k8s_server_2_reboot" {
+  depends_on    = [proxmox_vm_qemu.k8s_server_2]
+  provisioner "remote-exec" {
+    inline = [
+      "qm reboot ${proxmox_vm_qemu.k8s_server_2.vmid}",
+    ]
+    connection {
+      type     = "ssh"
+      user     = "${var.proxmox_server_user}"
+      password = "${var.proxmox_api_password}"
+      host     = "${var.proxmox_server_ip}"
+      timeout  = "60s"
+    }
+  }
 }
 
 resource "proxmox_vm_qemu" "k8s_server_3" {
-  depends_on    = [packer_image.ubuntu_server_jammy]
+  vmid          = 2103
+  depends_on    = [packer_image.ubuntu_server_jammy_docker]
   name          = "k8s-server-3"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -84,7 +122,7 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy.name
+  clone         = packer_image.ubuntu_server_jammy_docker.name
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -95,8 +133,9 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
 
   disk {
     storage = "local-lvm"
-    type = "scsi"
+    type = "virtio"
     size = "32G"
+    format = "raw"
   }
 
   network {
@@ -107,8 +146,25 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   os_type = "cloud-init"
   ipconfig0 = "ip=192.168.29.103/16,gw=192.168.29.1"
   nameserver = "192.168.29.1"
-  ciuser = "bub"
+  ciuser = "${var.vm_username}"
   sshkeys = <<EOF
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC6CLheLTcYf7v23mF69qpGiTfCd7dmhMFTRh3IfqCppURO+W10rbCIebMEiT4bjF1QXAMwaXFRJ/FahIyWsMiojJ5yyCkJzspZuJyDUaLFQRQY0U0vS4Y7B5FqO5PpNXfPXN1uOXpgJWAlzcm2pb+XDl6ceF3F2EHTWXjUvLMrAVri8drws3B2IXMwommD6CcXcqK+mbAqQTEaPODV6q+G3clTdStKqF+kTE+az49hh+wctGU0fQCh4G2gv+cddizGKTUou/wIlD0uHk3OgLMT5/J7cQvWzyzKVa34LEboDg8pBgP+FXJxGTHLxpy+8K68oxhGssc9FLiOnWESxRcaCJgU4WMpJR6pof1VyJJTEODAd2eg5LWfIsTwVFfl8goDnuR1zY3H3IfMDkyv7a0kFYvUjk6XPBpv/hnVO22mfCyAZRVn3PzTqmw3c7W5Lk4TSRZHzVrZUNN2kMmfYZE4uP0IUmxDpvu47HmMatQlRDGekv439JPW/PJ0dD8SQpE= bub@DESKTOP-VEH8D7J
-EOF
+  ${var.vm_public_key}
+  EOF
+
+}
+
+resource "null_resource" "k8s_server_3_reboot" {
+  depends_on    = [proxmox_vm_qemu.k8s_server_3]
+  provisioner "remote-exec" {
+    inline = [
+      "qm reboot ${proxmox_vm_qemu.k8s_server_3.vmid}",
+    ]
+    connection {
+      type     = "ssh"
+      user     = "${var.proxmox_server_user}"
+      password = "${var.proxmox_api_password}"
+      host     = "${var.proxmox_server_ip}"
+      timeout  = "60s"
+    }
+  }
 }
