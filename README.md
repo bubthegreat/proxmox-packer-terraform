@@ -87,6 +87,7 @@ This is workign on a windows box, but does not work on WSL2 because of the netwo
 3. Add notes in the resources
 4. Convert sshkeys to variables
 5. target node should be an input variable
+6. Force reboot to get around https://github.com/Telmate/terraform-provider-proxmox/issues/603
 
 
 # References
