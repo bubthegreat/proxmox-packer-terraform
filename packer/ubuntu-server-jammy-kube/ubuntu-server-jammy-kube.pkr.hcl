@@ -38,13 +38,6 @@ source "proxmox-clone" "ubuntu-server-jammy-kube" {
         bridge = "vmbr0"
         firewall = "false"
     }
-    disks {
-        storage_pool = "local-lvm-fast"
-        storage_pool_type = "lvm"
-        type = "virtio"
-        disk_size = "32G"
-        format = "raw"
-    }
     ssh_username = "bub"
     ssh_timeout = "30m"
     ssh_private_key_file = "~/.ssh/id_rsa"

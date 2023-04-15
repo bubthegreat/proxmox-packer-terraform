@@ -1,8 +1,7 @@
 # https://registry.terraform.io/providers/Telmate/proxmox/latest/docs/resources/vm_qemu#argument-reference
 
 resource "proxmox_vm_qemu" "k8s_server_1" {
-  depends_on    = [packer_image.ubuntu_server_jammy_kube]
-  vmid          = 2101
+  vmid          = 2021
   name          = "k8s-server-1"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -10,7 +9,7 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy_kube.name
+  clone         = "ubuntu-server-jammy-kube"
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -20,9 +19,9 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   scsihw        = "virtio-scsi-single"
 
   disk {
-    storage = "local-lvm-fast"
+    storage = "local-lvm"
     type = "virtio"
-    size = "32G"
+    size = "16G"
     format = "raw"
   }
 
@@ -32,11 +31,11 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   }
 
   os_type = "cloud-init"
-  ipconfig0 = "ip=192.168.29.101/16,gw=192.168.29.1"
-  nameserver = "192.168.29.1"
+  ipconfig0 = "ip=192.168.29.21/16"
+  nameserver = "8.8.8.8"
   ciuser = "${var.vm_username}"
   sshkeys = <<EOF
-  ${var.vm_public_key}
+${var.vm_public_key}
   EOF
 }
 
@@ -56,9 +55,9 @@ resource "null_resource" "k8s_server_1_reboot" {
   }
 }
 
+
 resource "proxmox_vm_qemu" "k8s_server_2" {
-  vmid          = 2102
-  depends_on    = [packer_image.ubuntu_server_jammy_kube]
+  vmid          = 2022
   name          = "k8s-server-2"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -66,7 +65,7 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy_kube.name
+  clone         = "ubuntu-server-jammy-kube"
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -76,9 +75,9 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   scsihw        = "virtio-scsi-single"
 
   disk {
-    storage = "local-lvm-fast"
+    storage = "local-lvm"
     type = "virtio"
-    size = "32G"
+    size = "16G"
     format = "raw"
   }
 
@@ -88,11 +87,11 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   }
 
   os_type = "cloud-init"
-  ipconfig0 = "ip=192.168.29.102/16,gw=192.168.29.1"
-  nameserver = "192.168.29.1"
+  ipconfig0 = "ip=192.168.29.22/16"
+  nameserver = "8.8.8.8"
   ciuser = "${var.vm_username}"
   sshkeys = <<EOF
-  ${var.vm_public_key}
+${var.vm_public_key}
   EOF
 }
 
@@ -112,9 +111,9 @@ resource "null_resource" "k8s_server_2_reboot" {
   }
 }
 
+
 resource "proxmox_vm_qemu" "k8s_server_3" {
-  vmid          = 2103
-  depends_on    = [packer_image.ubuntu_server_jammy_kube]
+  vmid          = 2023
   name          = "k8s-server-3"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -122,7 +121,7 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy_kube.name
+  clone         = "ubuntu-server-jammy-kube"
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -132,9 +131,9 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   scsihw        = "virtio-scsi-single"
 
   disk {
-    storage = "local-lvm-fast"
+    storage = "local-lvm"
     type = "virtio"
-    size = "32G"
+    size = "16G"
     format = "raw"
   }
 
@@ -144,13 +143,12 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   }
 
   os_type = "cloud-init"
-  ipconfig0 = "ip=192.168.29.103/16,gw=192.168.29.1"
-  nameserver = "192.168.29.1"
+  ipconfig0 = "ip=192.168.29.23/16"
+  nameserver = "8.8.8.8"
   ciuser = "${var.vm_username}"
   sshkeys = <<EOF
-  ${var.vm_public_key}
+${var.vm_public_key}
   EOF
-
 }
 
 resource "null_resource" "k8s_server_3_reboot" {

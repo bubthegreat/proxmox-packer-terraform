@@ -22,7 +22,7 @@ resource "packer_image" "ubuntu_server_jammy_docker" {
 }
 
 resource "packer_image" "ubuntu_server_jammy_kube" {
-    depends_on    = [packer_image.ubuntu_server_jammy_base]
+    depends_on    = [packer_image.ubuntu_server_jammy_docker]
     directory = "../../../packer/ubuntu-server-jammy-kube/"
     file = "ubuntu-server-jammy-kube.pkr.hcl"
     name = "ubuntu-server-jammy-kube"

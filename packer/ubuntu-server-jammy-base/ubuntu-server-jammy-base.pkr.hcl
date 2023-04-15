@@ -37,13 +37,6 @@ source "proxmox-iso" "ubuntu-server-jammy-base" {
         bridge = "vmbr0"
         firewall = "false"
     } 
-    disks {
-        storage_pool = "local-lvm-fast"
-        storage_pool_type = "lvm"
-        type = "virtio"
-        disk_size = "32G"
-        format = "raw"
-    }
     ssh_username = "bub"
     ssh_timeout = "20m"
     ssh_private_key_file = "~/.ssh/id_rsa"
@@ -51,7 +44,7 @@ source "proxmox-iso" "ubuntu-server-jammy-base" {
     # ISO Settings
 
     disks {
-        disk_size = "32G"
+        disk_size = "8G"
         format = "raw"
         storage_pool = "local-lvm"
         storage_pool_type = "lvm"
