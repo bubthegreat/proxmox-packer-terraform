@@ -1,7 +1,7 @@
 # https://registry.terraform.io/providers/Telmate/proxmox/latest/docs/resources/vm_qemu#argument-reference
 
 resource "proxmox_vm_qemu" "k8s_server_1" {
-  depends_on    = [packer_image.ubuntu_server_jammy_docker]
+  depends_on    = [packer_image.ubuntu_server_jammy_kube]
   vmid          = 2101
   name          = "k8s-server-1"
   desc          = "Ubuntu 22.04 LTS Server"
@@ -10,7 +10,7 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy_docker.name
+  clone         = packer_image.ubuntu_server_jammy_kube.name
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -20,7 +20,7 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   scsihw        = "virtio-scsi-single"
 
   disk {
-    storage = "local-lvm"
+    storage = "local-lvm-fast"
     type = "virtio"
     size = "32G"
     format = "raw"
@@ -58,7 +58,7 @@ resource "null_resource" "k8s_server_1_reboot" {
 
 resource "proxmox_vm_qemu" "k8s_server_2" {
   vmid          = 2102
-  depends_on    = [packer_image.ubuntu_server_jammy_docker]
+  depends_on    = [packer_image.ubuntu_server_jammy_kube]
   name          = "k8s-server-2"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -66,7 +66,7 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy_docker.name
+  clone         = packer_image.ubuntu_server_jammy_kube.name
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -76,7 +76,7 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   scsihw        = "virtio-scsi-single"
 
   disk {
-    storage = "local-lvm"
+    storage = "local-lvm-fast"
     type = "virtio"
     size = "32G"
     format = "raw"
@@ -114,7 +114,7 @@ resource "null_resource" "k8s_server_2_reboot" {
 
 resource "proxmox_vm_qemu" "k8s_server_3" {
   vmid          = 2103
-  depends_on    = [packer_image.ubuntu_server_jammy_docker]
+  depends_on    = [packer_image.ubuntu_server_jammy_kube]
   name          = "k8s-server-3"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -122,7 +122,7 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   
   agent         = 1
 
-  clone         = packer_image.ubuntu_server_jammy_docker.name
+  clone         = packer_image.ubuntu_server_jammy_kube.name
   cores         = 4
   sockets       = 2
   cpu           = "host"
@@ -132,7 +132,7 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   scsihw        = "virtio-scsi-single"
 
   disk {
-    storage = "local-lvm"
+    storage = "local-lvm-fast"
     type = "virtio"
     size = "32G"
     format = "raw"

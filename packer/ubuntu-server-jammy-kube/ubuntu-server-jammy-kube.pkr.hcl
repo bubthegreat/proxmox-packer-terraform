@@ -13,7 +13,7 @@ variable "proxmox_api_password" {
 }
 
 # Resource Definiation for the VM Template
-source "proxmox-clone" "ubuntu-server-jammy-docker" {
+source "proxmox-clone" "ubuntu-server-jammy-kube" {
 
     # Proxmox Connection Settings
     proxmox_url = "${var.proxmox_api_url}"
@@ -24,9 +24,9 @@ source "proxmox-clone" "ubuntu-server-jammy-docker" {
     
     # VM General Settings
     node = "pve"
-    vm_id = "102"
-    vm_name = "ubuntu-server-jammy-docker"
-    template_description = "Ubuntu Server jammy Image with Docker "
+    vm_id = "103"
+    vm_name = "ubuntu-server-jammy-kube"
+    template_description = "Ubuntu Server jammy Image with kube "
     qemu_agent = true
     scsi_controller = "virtio-scsi-pci"
 
@@ -37,7 +37,7 @@ source "proxmox-clone" "ubuntu-server-jammy-docker" {
         model = "virtio"
         bridge = "vmbr0"
         firewall = "false"
-    } 
+    }
     disks {
         storage_pool = "local-lvm-fast"
         storage_pool_type = "lvm"
@@ -51,14 +51,14 @@ source "proxmox-clone" "ubuntu-server-jammy-docker" {
 
     # Clone settings
 
-    clone_vm = "ubuntu-server-jammy-base"
+    clone_vm = "ubuntu-server-jammy-docker"
 }
 
 # Build Definition to create the VM Template
 build {
 
-    name = "ubuntu-server-jammy-docker"
-    sources = ["source.proxmox-clone.ubuntu-server-jammy-docker"]
+    name = "ubuntu-server-jammy-kube"
+    sources = ["source.proxmox-clone.ubuntu-server-jammy-kube"]
 
     # We want to wait for the template to finish with anything cloud-init needs to do just to make sure it's all
     # installed - this will (In theory) speed up subsequent builds)
@@ -72,11 +72,13 @@ build {
     # Provisioning the VM Template with Docker Installation #4
     provisioner "shell" {
         inline = [
-            "sudo apt-get install -y ca-certificates curl gnupg lsb-release",
-            "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-            "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
             "sudo apt -y update",
-            "sudo apt install -y docker-ce docker-ce-cli containerd.io"
+            "sudo apt install -y apt-transport-https ca-certificates curl",
+            "sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg",
+            "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main' | sudo tee /etc/apt/sources.list.d/kubernetes.list",
+            "sudo apt -y update",
+            "sudo apt install -y kubelet kubeadm kubectl",
+            "sudo apt-mark hold kubelet kubeadm kubectl"
         ]
     }
 }
