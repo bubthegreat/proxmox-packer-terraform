@@ -94,8 +94,7 @@ This is working on a windows box, but does not work on WSL2 because of the netwo
 3. Add notes in the resources
 4. Convert sshkeys to variables
 5. target node should be an input variable
-6. Force reboot to get around https://github.com/Telmate/terraform-provider-proxmox/issues/603
-
+6. Add storage configurations that will be consistent to terraform provider so your proxmox server is consistently configured for our kubernetes cluster even if it's already in use.
 
 # Debugging
 
@@ -113,6 +112,11 @@ https://gitlab.com/acidpizza-stuff/infra/terraform-modules/proxmox-vm-terraform-
 
 https://github.com/Telmate/terraform-provider-proxmox/issues/704
 
+### Randomly failing at different steps
+
+Had the unfortunate luck to find out that a hardware RAID controller is probably not going to work for the types of builds we're doing here - either get better raid controllers or get rekt, because you're gonna have a bumpy ride if you hit this.
+
+Other causes of "random" failing can be DNS issues on your local network - if you're getting errors for network related stuff, make sure you're not blowing up your network or that it is happy - lots of packet loss or things that might block traffic can and will mess up your builds if you don't get it straightened out - including duplicate IP addresses - so if you're not going to use the
 
 # References
 

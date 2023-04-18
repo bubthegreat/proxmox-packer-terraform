@@ -12,6 +12,10 @@ variable "proxmox_api_password" {
     sensitive = true
 }
 
+variable "vm_id" {
+    type = string
+}
+
 # Resource Definiation for the VM Template
 source "proxmox-iso" "ubuntu-server-jammy-base" {
 
@@ -24,7 +28,7 @@ source "proxmox-iso" "ubuntu-server-jammy-base" {
     
     # VM General Settings
     node = "pve"
-    vm_id = "101"
+    vm_id = "${var.vm_id}"
     vm_name = "ubuntu-server-jammy-base"
     template_description = "Ubuntu Server jammy Image"
     qemu_agent = true
@@ -37,11 +41,7 @@ source "proxmox-iso" "ubuntu-server-jammy-base" {
         bridge = "vmbr0"
         firewall = "false"
     } 
-    ssh_username = "bub"
-    ssh_timeout = "20m"
-    ssh_private_key_file = "~/.ssh/id_rsa"
 
-    # ISO Settings
 
     disks {
         disk_size = "8G"
@@ -50,8 +50,12 @@ source "proxmox-iso" "ubuntu-server-jammy-base" {
         storage_pool_type = "lvm"
         type = "virtio"
     }
+    ssh_timeout = "30m"
+    ssh_username = "bub"
+    ssh_private_key_file = "~/.ssh/id_rsa"
 
-    iso_file = "local:iso/ubuntu-22.04-live-server-amd64.iso"
+    # ISO Settings
+    iso_file = "local:iso/ubuntu-22.04.2-live-server-amd64.iso"
     iso_storage_pool = "local"
     unmount_iso = true
 
@@ -59,13 +63,33 @@ source "proxmox-iso" "ubuntu-server-jammy-base" {
     cloud_init_storage_pool = "local-lvm"
 
     boot_command = [
+        # escape out of the default auto-start behavior that goes into the 
+        # ubuntu manual installation window.
         "<esc><wait>",
+        # Get to the custom command startup for the image instead of the normal
+        # options that go into the manual installation window.
         "e<wait>",
+        # naveigate to the existing startup command and go to the end of the line
         "<down><down><down><end>",
+        # Remove any input that we've already got in the initial command
+        # "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><bs><wait>",
         "<bs><bs><bs><bs><wait>",
+
+        # Default
+        # 
+        # Use dhcp so you'll have a network address, set your gateway and netmask
+        # and use google DNS server so you can resolve packages during installs for
+        # cloud-init.
+        # "ip=192.168.29.254::192.168.29.1:255.255.255.0::::8.8.8.8 ",
+        # Run the cloud init command with a local cloud-init config served at the special IP
         "autoinstall ds=nocloud-net\\;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ ---<wait>",
+        # F10 boots with the given configuration - so now we're saying boot linux and run the
+        # autoinstall command that pulls the config from the webserver (That packer handles for
+        # us, or you could serve up maybe from github?) and run with it.
         "<f10><wait>"
     ]
+    
+
     boot = "c"
     boot_wait = "5s"
 
@@ -107,5 +131,5 @@ build {
     # Provisioning the VM Template for Cloud-Init Integration in Proxmox #3
     provisioner "shell" {
         inline = [ "sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg" ]
-    }
+    }    
 }

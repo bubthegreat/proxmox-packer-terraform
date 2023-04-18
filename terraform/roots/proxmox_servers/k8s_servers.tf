@@ -1,7 +1,7 @@
 # https://registry.terraform.io/providers/Telmate/proxmox/latest/docs/resources/vm_qemu#argument-reference
 
 resource "proxmox_vm_qemu" "k8s_server_1" {
-  vmid          = 2021
+  vmid          = 2221
   name          = "k8s-server-1"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -17,6 +17,7 @@ resource "proxmox_vm_qemu" "k8s_server_1" {
   memory        = 8192
 
   scsihw        = "virtio-scsi-single"
+  full_clone = false
 
   disk {
     storage = "local-lvm"
@@ -39,25 +40,9 @@ ${var.vm_public_key}
   EOF
 }
 
-resource "null_resource" "k8s_server_1_reboot" {
-  depends_on    = [proxmox_vm_qemu.k8s_server_1]
-  provisioner "remote-exec" {
-    inline = [
-      "qm reboot ${proxmox_vm_qemu.k8s_server_1.vmid}",
-    ]
-    connection {
-      type     = "ssh"
-      user     = "${var.proxmox_server_user}"
-      password = "${var.proxmox_api_password}"
-      host     = "${var.proxmox_server_ip}"
-      timeout  = "60s"
-    }
-  }
-}
-
 
 resource "proxmox_vm_qemu" "k8s_server_2" {
-  vmid          = 2022
+  vmid          = 2222
   name          = "k8s-server-2"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -73,6 +58,7 @@ resource "proxmox_vm_qemu" "k8s_server_2" {
   memory        = 8192
 
   scsihw        = "virtio-scsi-single"
+  full_clone = false
 
   disk {
     storage = "local-lvm"
@@ -95,25 +81,9 @@ ${var.vm_public_key}
   EOF
 }
 
-resource "null_resource" "k8s_server_2_reboot" {
-  depends_on    = [proxmox_vm_qemu.k8s_server_2]
-  provisioner "remote-exec" {
-    inline = [
-      "qm reboot ${proxmox_vm_qemu.k8s_server_2.vmid}",
-    ]
-    connection {
-      type     = "ssh"
-      user     = "${var.proxmox_server_user}"
-      password = "${var.proxmox_api_password}"
-      host     = "${var.proxmox_server_ip}"
-      timeout  = "60s"
-    }
-  }
-}
-
 
 resource "proxmox_vm_qemu" "k8s_server_3" {
-  vmid          = 2023
+  vmid          = 2223
   name          = "k8s-server-3"
   desc          = "Ubuntu 22.04 LTS Server"
   target_node   = "pve"
@@ -129,6 +99,7 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   memory        = 8192
 
   scsihw        = "virtio-scsi-single"
+  full_clone = false
 
   disk {
     storage = "local-lvm"
@@ -149,20 +120,4 @@ resource "proxmox_vm_qemu" "k8s_server_3" {
   sshkeys = <<EOF
 ${var.vm_public_key}
   EOF
-}
-
-resource "null_resource" "k8s_server_3_reboot" {
-  depends_on    = [proxmox_vm_qemu.k8s_server_3]
-  provisioner "remote-exec" {
-    inline = [
-      "qm reboot ${proxmox_vm_qemu.k8s_server_3.vmid}",
-    ]
-    connection {
-      type     = "ssh"
-      user     = "${var.proxmox_server_user}"
-      password = "${var.proxmox_api_password}"
-      host     = "${var.proxmox_server_ip}"
-      timeout  = "60s"
-    }
-  }
 }

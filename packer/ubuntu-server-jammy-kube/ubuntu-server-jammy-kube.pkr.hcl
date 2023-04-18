@@ -12,6 +12,10 @@ variable "proxmox_api_password" {
     sensitive = true
 }
 
+variable "vm_id" {
+    type = string
+}
+
 # Resource Definiation for the VM Template
 source "proxmox-clone" "ubuntu-server-jammy-kube" {
 
@@ -24,12 +28,11 @@ source "proxmox-clone" "ubuntu-server-jammy-kube" {
     
     # VM General Settings
     node = "pve"
-    vm_id = "103"
+    vm_id = "${var.vm_id}"
     vm_name = "ubuntu-server-jammy-kube"
     template_description = "Ubuntu Server jammy Image with kube "
     qemu_agent = true
     scsi_controller = "virtio-scsi-pci"
-
     cores = "4"
     sockets = "2"
     memory = "8192" 
@@ -38,12 +41,12 @@ source "proxmox-clone" "ubuntu-server-jammy-kube" {
         bridge = "vmbr0"
         firewall = "false"
     }
-    ssh_username = "bub"
     ssh_timeout = "30m"
+    ssh_username = "bub"
     ssh_private_key_file = "~/.ssh/id_rsa"
-
-    # Clone settings
-
+    task_timeout = "10m"
+    
+    full_clone = false
     clone_vm = "ubuntu-server-jammy-docker"
 }
 
@@ -58,7 +61,6 @@ build {
     provisioner "shell" {
         inline = [
             "/usr/bin/cloud-init status --wait",
-            "sudo apt -y update",
         ]
     }
 
@@ -73,5 +75,15 @@ build {
             "sudo apt install -y kubelet kubeadm kubectl",
             "sudo apt-mark hold kubelet kubeadm kubectl"
         ]
+    }
+
+    provisioner "file" {
+        source: "./files/containerd-config.toml"
+        destination = "/etc/containerd/config.toml"
+    }
+
+    provisioner "file" {
+        source: "./files/cgroup-driver-k8s.conf"
+        destination = "/etc/modules-load.d/k8s.conf"
     }
 }
