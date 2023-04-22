@@ -26,14 +26,22 @@ variable "k8s_server_password" {
     sensitive = true
 }
 
+variable "proxmox_server_ip" {
+    type = string
+}
+
+variable "proxmox_server_user" {
+    type = string
+}
+
 resource "proxmox_lxc" "basic" {
-  count = 9
+  count = 3
   target_node  = "pve"
   onboot = true
   memory = 8192
   vmid = "${100 + count.index + 1}"
   cores = 4
-  hostname     = "k8s-lxc-${count.index + 1}"
+  hostname     = "k8s-lxc-${100 + count.index + 1}"
   ostemplate   = "local:vztmpl/${var.proxmox_lxc_template}"
   ostype = "ubuntu"
   password     = "${var.k8s_server_password}"
@@ -52,6 +60,7 @@ resource "proxmox_lxc" "basic" {
   network {
     name   = "eth0"
     bridge = "vmbr0"
-    ip     = "11.2.22.${count.index + 1}/24"
+    ip     = "11.1.1.${100 + count.index + 1}/8"
+    gw     = "11.0.0.1"
   }
 }

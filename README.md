@@ -26,6 +26,7 @@ Assuming this goes well, we can update the packer with a second image that would
 # TODO:
 
 1. target node should be an input variable
+2. Add additional security configurations using https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_firewall_rules
 
 # Bugs
 
