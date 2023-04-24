@@ -26,3 +26,25 @@ variable "proxmox_server_ip" {
 variable "proxmox_server_user" {
     type = string
 }
+
+variable "cluster_join_ip" {
+  type = string
+  default = "192.168.29.101"
+}
+
+variable "cluster_gateway" {
+  type = string
+  default = "192.168.29.1"
+}
+variable "cluster_netmask" {
+  type = string
+  default = "24"
+}
+variable "cluster_dns" {
+  type = string
+  default = "8.8.8.8"
+}
+variable "private_key_path" {
+  type = string
+  default = "~/.ssh/id_rsa"
+}

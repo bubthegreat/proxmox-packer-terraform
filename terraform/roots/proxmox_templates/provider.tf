@@ -4,10 +4,6 @@ terraform {
       source = "Telmate/proxmox"
       version = "2.9.11"
     }
-    packer = {
-      source = "toowoxx/packer"
-      version = "0.14.0"
-    }
   }
 }
 
