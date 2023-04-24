@@ -3,3 +3,6 @@
 **.tfvars
 packer_cache/
 **tfstate.backup
+venv/
+*.ipynb
+.ipynb_checkpoints/
