@@ -5,7 +5,6 @@ locals {
     secret_key = "svc-cert-manager-secret-key" # Needs to be from var
     cert_manager_namespace = "cert-manager" # Needs to be from var
     aws_region = "us-west-2" # Needs to be from var
-    cluster_issuer_name = "letsencrypt-prod" # Needs to be from var
     
 }
 
@@ -91,7 +90,7 @@ resource "kubectl_manifest" "cluster_issuer_prod" {
         }, 
         "apiVersion": "cert-manager.io/v1", 
         "metadata": {
-            "name": local.cluster_issuer_name
+            "name": var.cluster_issuer_name
         }
     })
 }

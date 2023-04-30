@@ -19,3 +19,8 @@ variable "aws_secret_key" {
 variable "acme_email" {
     type = string
 }
+
+variable "cluster_issuer_name" {
+    type = string
+    default = "letsencrypt-prod"
+}

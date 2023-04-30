@@ -4,7 +4,6 @@ locals {
     whoami_tls_port = 5678 # Needs to be from var
     whoami_target_port = 80 # Needs to be from var
     whoami_service_type = "ClusterIP" # Needs to be from var
-    cluster_issuer_name = "letsencrypt-prod" # Needs to be from var
     redirect_middleware_namespace = "default" # Needs to be from var
     redirect_middleware_name = "redirect-https" # Needs to be from var
 
@@ -48,7 +47,7 @@ resource "kubernetes_ingress_v1" "whoami_ingress_tls" {
     name = "${local.hostname}-tls-ingress"
     annotations = {
       "kubernetes.io/ingress.class" = "traefik"
-      "cert-manager.io/cluster-issuer" = local.cluster_issuer_name
+      "cert-manager.io/cluster-issuer" = var.cluster_issuer_name
       "traefik.ingress.kubernetes.io/router.middlewares" = "${local.redirect_middleware_namespace}-${local.redirect_middleware_name}@kubernetescrd"
     }
   }
