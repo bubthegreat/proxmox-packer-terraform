@@ -14,6 +14,14 @@ We require terraform and packer for these operations, as well as a functioning p
 6. Initialize terraform & Run the terraform apply in deployments
 7. Wait until certs resolve and visit https://whoami.${DOMAIN} and enjoy your TLS baby!
 
+When you're done, you should be able to see the traefik ingresses with: 
+
+```
+kubectl --namespace kube-system port-forward deployments/traefik 9000:9000
+```
+
+and then navigating to http://localhost:9000/dashboard/
+
 ### Example init and apply
 
 ```
@@ -39,6 +47,14 @@ Once you know you've got a server, run the following to get the kubeconfig - adj
 
 1. target node should be an input variable
 2. Add additional security configurations using https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_firewall_rules
+
+
+# Features
+
+* Autoreloading configmap and secrets via stakater/reloader
+* Auto-TLS support through cert-manager & traefik ingress middleware
+* Example for static website serving
+
 
 # Bugs
 
@@ -69,6 +85,10 @@ https://registry.terraform.io/providers/Telmate/proxmox/latest
 https://developer.hashicorp.com/packer/plugins/builders/proxmox
 
 https://github.com/terraform-iaac/terraform-kubernetes-cert-manager
+
+https://blog.differentpla.net/blog/2023/01/06/traefik-dashboard/
+
+https://github.com/stakater/Reloader
 
 # Troubleshooting
 
